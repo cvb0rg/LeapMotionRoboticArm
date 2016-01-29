@@ -9,6 +9,10 @@
 
 import Leap, sys
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
+from BreakfastSerial import Arduino, Servo, Led
+from time import sleep
+
+board = Arduino()
 
 
 class SampleListener(Leap.Listener):
