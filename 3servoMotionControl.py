@@ -14,6 +14,16 @@ from time import sleep
 
 board = Arduino()
 
+# Blink some Leds TEST
+redLed = Led(board, 10)
+greenLed = Led(board, 11)
+
+for i in range(10):
+    redLed.on()
+    sleep(1)
+    redLed.off()
+
+
 
 class SampleListener(Leap.Listener):
     def on_init(self, controller):
@@ -144,3 +154,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
