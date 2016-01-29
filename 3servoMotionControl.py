@@ -23,7 +23,7 @@ for i in range(10):
     sleep(1)
     redLed.off()
 
-
+# Hot Fix!
 
 class SampleListener(Leap.Listener):
     def on_init(self, controller):
