@@ -23,7 +23,25 @@ for i in range(10):
     sleep(1)
     redLed.off()
 
-# Hot Fix!
+def map(inputPos, in_min, in_max, out_min, out_max):
+    """ This function will linearly scale an incoming value 
+        belonging to a certain range (in_max - in_min) to a new 
+        value in the out range (out_max - out_min). """
+    
+    scale = (out_max - out_min)/ (in_max - in_min)
+    return ((inputPos - in_min) * scale) + out_min
+
+def constrain(inputVal, lower_limit, upper_limit):
+    """ Clips the input Value in the range 
+        (upper_limit - lower_limit)"""
+    
+    if (inputVal < lower_limit):
+        return lower_limit
+    elif (inputVal > upper_limit):
+        return upper_limit
+    else:
+        return inputVal
+
 
 class SampleListener(Leap.Listener):
     def on_init(self, controller):
