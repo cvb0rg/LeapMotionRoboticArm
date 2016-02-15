@@ -1,35 +1,38 @@
 ################################################################################
 # Adapted from sample.py
 # Control 3 servos, actuating a robotic arm:
-# Servo 1 is controlling the rotation around the z-axis
-# Servo 2 is mounted at the base of the arm.
-# Servo 3 is mounted at the mid-section of the arm.
+# Servo_red is controlling the rotation around the z-axis
+# Servo_blue is mounted at the base of the arm.
+# Servo_green is mounted at the mid-section of the arm.
 # A combination of 2 & 3 moves the arm up and down in a plane containing the z-axis
 ################################################################################
+
+import os, sys, inspect, thread, time
+src_dir = os.path.dirname(inspect.getfile(inspect.currentframe()))
+arch_dir = 'lib/'
+sys.path.insert(0, os.path.abspath(os.path.join(src_dir, arch_dir)))
+
 
 import Leap, sys
 from Leap import CircleGesture, KeyTapGesture, ScreenTapGesture, SwipeGesture
 from BreakfastSerial import Arduino, Servo, Led
 from time import sleep
 
+
 board = Arduino()
 
-# Blink some Leds TEST
-redLed = Led(board, 10)
-greenLed = Led(board, 11)
+servo_red = Servo(board,3)
+servo_blue = Servo(board,5)
+servo_green = Servo(board,6)
 
-for i in range(10):
-    redLed.on()
-    sleep(1)
-    redLed.off()
-
-def map(inputPos, in_min, in_max, out_min, out_max):
+def mapVal(inputPos, in_min, in_max, out_min, out_max):
     """ This function will linearly scale an incoming value 
         belonging to a certain range (in_max - in_min) to a new 
         value in the out range (out_max - out_min). """
     
-    scale = (out_max - out_min)/ (in_max - in_min)
-    return ((inputPos - in_min) * scale) + out_min
+ 
+    scale = ((out_max - out_min) / (in_max - in_min))
+    return float(((inputPos - in_min) * scale) + out_min)
 
 def constrain(inputVal, lower_limit, upper_limit):
     """ Clips the input Value in the range 
@@ -82,22 +85,35 @@ class SampleListener(Leap.Listener):
                 for finger in fingers:
                     avg_pos += finger.tip_position
                 avg_pos /= len(fingers)
-                print "Hand has %d fingers, average finger tip position: %s" % (
-                      len(fingers), avg_pos)
+                # print "Hand has %d fingers, average finger tip position: %s" % (
+                #       len(fingers), avg_pos)
+            print avg_pos
+
+            # To Arduino
+            redVal = constrain(mapVal(avg_pos[0], -150., 150., 0., 180.), 0., 175.)
+            servo_red.set_position(redVal)
+
+            blueVal = constrain(mapVal(avg_pos[2], -100., 120., 0., 180.), 15., 95.)
+            servo_blue.set_position(blueVal)
+
+            greenVal = constrain(mapVal(avg_pos[1], 50., 250., 0., 180.), 50., 105.)
+            servo_green.set_position(greenVal)
+
+            print "redVal: %d, blueVal: %d, greenVal: %d" % (redVal, blueVal, greenVal)
 
             # Get the hand's sphere radius and palm position
-            print "Hand sphere radius: %f mm, palm position: %s" % (
-                  hand.sphere_radius, hand.palm_position)
+            # print "Hand sphere radius: %f mm, palm position: %s" % (
+            #       hand.sphere_radius, hand.palm_position)
 
             # Get the hand's normal vector and direction
             normal = hand.palm_normal
             direction = hand.direction
 
             # Calculate the hand's pitch, roll, and yaw angles
-            print "Hand pitch: %f degrees, roll: %f degrees, yaw: %f degrees" % (
-                direction.pitch * Leap.RAD_TO_DEG,
-                normal.roll * Leap.RAD_TO_DEG,
-                direction.yaw * Leap.RAD_TO_DEG)
+            # print "Hand pitch: %f degrees, roll: %f degrees, yaw: %f degrees" % (
+            #     direction.pitch * Leap.RAD_TO_DEG,
+            #     normal.roll * Leap.RAD_TO_DEG,
+            #     direction.yaw * Leap.RAD_TO_DEG)
 
             # Gestures
             for gesture in frame.gestures():
